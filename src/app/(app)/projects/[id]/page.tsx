@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { StepTracker } from '@/components/projects/step-tracker'
+import { InteractiveStepTracker } from '@/components/projects/interactive-step-tracker'
 import { StatusBadge } from '@/components/projects/status-badge'
-import { DepartmentChecklist } from '@/components/projects/department-checklist'
+import { InteractiveDepartmentChecklist } from '@/components/projects/interactive-department-checklist'
+import { NoteForm } from '@/components/projects/note-form'
+import { FinancialsPanel } from '@/components/projects/financials-panel'
+import { ReportGenerator } from '@/components/projects/report-generator'
 import { formatDate, formatCurrency } from '@/lib/utils/format'
 import { Pencil } from 'lucide-react'
 import Link from 'next/link'
-import type { ProjectStatus, DepartmentComment } from '@/types'
+import type { ProjectStatus, DepartmentComment, Payment } from '@/types'
 
 export default async function ProjectDetailPage({
   params,
@@ -45,6 +48,12 @@ export default async function ProjectDetailPage({
 
   const { data: invoices } = await supabase
     .from('invoices')
+    .select('*, payments(*)')
+    .eq('project_id', id)
+    .order('created_at', { ascending: false })
+
+  const { data: reports } = await supabase
+    .from('progress_reports')
     .select('*')
     .eq('project_id', id)
     .order('created_at', { ascending: false })
@@ -54,9 +63,6 @@ export default async function ProjectDetailPage({
   const municipality = project.municipality as { name: string; code: string } | null
   const planner = project.assigned_planner as { full_name: string; title: string | null } | null
   const deptComments = (project.department_comments || []) as DepartmentComment[]
-
-  const totalInvoiced = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) ?? 0
-  const totalPaid = invoices?.reduce((sum, inv) => sum + Number(inv.amount_paid), 0) ?? 0
 
   return (
     <div className="space-y-6">
@@ -83,7 +89,7 @@ export default async function ProjectDetailPage({
       {/* Step Tracker */}
       <Card>
         <CardContent className="pt-6">
-          <StepTracker currentStep={project.current_step} />
+          <InteractiveStepTracker projectId={id} currentStep={project.current_step} />
         </CardContent>
       </Card>
 
@@ -94,6 +100,7 @@ export default async function ProjectDetailPage({
           <TabsTrigger value="departments">Departments</TabsTrigger>
           <TabsTrigger value="notes">Notes ({notes?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="financials">Financials</TabsTrigger>
+          <TabsTrigger value="reports">Reports ({reports?.length ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -178,7 +185,7 @@ export default async function ProjectDetailPage({
               <CardTitle className="text-base">Department Comments (Step 3)</CardTitle>
             </CardHeader>
             <CardContent>
-              <DepartmentChecklist comments={deptComments} />
+              <InteractiveDepartmentChecklist comments={deptComments} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -188,7 +195,8 @@ export default async function ProjectDetailPage({
             <CardHeader>
               <CardTitle className="text-base">Activity Notes</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <NoteForm projectId={id} />
               {notes && notes.length > 0 ? (
                 <div className="space-y-4">
                   {notes.map((note) => (
@@ -217,33 +225,27 @@ export default async function ProjectDetailPage({
         </TabsContent>
 
         <TabsContent value="financials">
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Quotation</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <InfoRow label="Quotation Number" value={project.quotation_number} />
-                <InfoRow label="Quotation Amount" value={formatCurrency(project.quotation_amount)} />
-                <InfoRow label="Quotation Date" value={formatDate(project.quotation_date)} />
-                <InfoRow label="Date Accepted" value={formatDate(project.date_accepting)} />
-              </CardContent>
-            </Card>
+          <FinancialsPanel
+            projectId={id}
+            quotationNumber={project.quotation_number}
+            quotationAmount={project.quotation_amount}
+            quotationDate={project.quotation_date}
+            dateAccepting={project.date_accepting}
+            bulkServicesAmount={project.bulk_services_amount}
+            bulkServicesPaymentDate={project.bulk_services_payment_date}
+            invoices={(invoices || []).map((inv) => ({
+              ...inv,
+              payments: (inv as Record<string, unknown>).payments as Payment[] || [],
+            }))}
+          />
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Invoices Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <InfoRow label="Total Invoiced" value={formatCurrency(totalInvoiced)} />
-                <InfoRow label="Total Paid" value={formatCurrency(totalPaid)} />
-                <InfoRow label="Outstanding" value={formatCurrency(totalInvoiced - totalPaid)} />
-                <Separator />
-                <InfoRow label="Bulk Services Amount" value={formatCurrency(project.bulk_services_amount)} />
-                <InfoRow label="Bulk Services Payment" value={formatDate(project.bulk_services_payment_date)} />
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="reports">
+          <ReportGenerator
+            projectId={id}
+            fileNumber={project.file_number}
+            reports={reports || []}
+          />
         </TabsContent>
       </Tabs>
     </div>
