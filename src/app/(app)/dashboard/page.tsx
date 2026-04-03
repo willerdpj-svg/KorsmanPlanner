@@ -198,13 +198,13 @@ export default async function DashboardPage() {
                       {getJoinedName(project.client) || 'No client'} &middot;{' '}
                       {getJoinedName(project.application_type) || 'No type'}
                     </p>
+                    <p className="mt-1 text-[11px] tabular-nums text-muted-foreground/50">
+                      {formatDateLong(project.updated_at)}
+                    </p>
                   </div>
-                  <div className="ml-4 hidden w-48 sm:block">
+                  <div className="ml-4 hidden w-44 shrink-0 sm:block">
                     <StepTracker currentStep={project.current_step} compact />
                   </div>
-                  <span className="ml-4 shrink-0 text-[12px] tabular-nums text-muted-foreground/70">
-                    {formatDateLong(project.updated_at)}
-                  </span>
                 </Link>
               ))}
             </div>

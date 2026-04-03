@@ -25,18 +25,23 @@ export function StepTracker({ currentStep, steps, onStepClick, compact }: StepTr
                 onClick={() => onStepClick?.(step.step)}
                 disabled={!onStepClick}
                 className={cn(
-                  'flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-all',
+                  'flex items-center justify-center rounded-full text-xs font-semibold transition-all',
+                  compact ? 'h-5 w-5' : 'h-7 w-7',
                   step.step < currentStep &&
                     'bg-emerald-500 text-white shadow-sm',
                   step.step === currentStep &&
-                    'bg-primary text-white shadow-sm ring-4 ring-primary/20',
+                    (compact
+                      ? 'bg-primary text-white ring-2 ring-primary/30'
+                      : 'bg-primary text-white shadow-sm ring-4 ring-primary/20'),
                   step.step > currentStep &&
                     'bg-muted text-muted-foreground/50',
                   onStepClick && 'cursor-pointer hover:opacity-80'
                 )}
               >
                 {step.step < currentStep ? (
-                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  <Check className={cn(compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5')} strokeWidth={2.5} />
+                ) : compact ? (
+                  <span className="text-[9px]">{step.step}</span>
                 ) : (
                   step.step
                 )}

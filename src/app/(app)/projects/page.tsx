@@ -179,13 +179,13 @@ export default async function ProjectsPage({
                           {project.physical_address}
                         </p>
                       )}
+                      <p className={`mt-1 text-[11px] tabular-nums ${stale ? 'font-semibold text-amber-600' : 'text-muted-foreground/50'}`}>
+                        {formatDateLong(project.updated_at)}
+                      </p>
                     </div>
-                    <div className="hidden w-48 lg:block">
+                    <div className="hidden w-44 shrink-0 lg:block">
                       <StepTracker currentStep={project.current_step} compact />
                     </div>
-                    <span className={`shrink-0 text-[12px] tabular-nums ${stale ? 'font-semibold text-amber-600' : 'text-muted-foreground/70'}`}>
-                      {formatDateLong(project.updated_at)}
-                    </span>
                   </Link>
                 )
               })}
