@@ -154,7 +154,7 @@ export interface ProgressReport {
   created_at: string
 }
 
-// Application step labels
+// Application step labels - standard SPLUMA process
 export const APPLICATION_STEPS = [
   { step: 1, label: 'Filed', description: 'Application sent to Department of Town Planning' },
   { step: 2, label: 'Public Participation', description: 'Council informs office that public participation may start' },
@@ -164,6 +164,26 @@ export const APPLICATION_STEPS = [
   { step: 6, label: 'Council Sign-off', description: 'Council Resolution drafted and signed' },
   { step: 7, label: 'Resolution Issued', description: 'Council Resolution is issued' },
 ] as const
+
+// Township Establishment follows a different process
+export const TOWNSHIP_STEPS = [
+  { step: 1, label: 'Preparation', description: 'Preparation of application documentation and reports' },
+  { step: 2, label: 'Submission', description: 'Application submitted to the municipality' },
+  { step: 3, label: 'Assessment', description: 'Municipal assessment and departmental comments' },
+  { step: 4, label: 'Decision', description: 'Municipality makes a decision on the application' },
+  { step: 5, label: 'Compliance', description: 'Compliance with conditions of establishment' },
+  { step: 6, label: 'Registration', description: 'Township register opened at Surveyor-General' },
+  { step: 7, label: 'Proclamation', description: 'Township proclaimed in the Provincial Gazette' },
+] as const
+
+export type ApplicationStep = { step: number; label: string; description: string }
+
+export function getApplicationSteps(applicationTypeName: string | null | undefined): ApplicationStep[] {
+  if (applicationTypeName === 'Township Establishment') {
+    return [...TOWNSHIP_STEPS]
+  }
+  return [...APPLICATION_STEPS]
+}
 
 export const DEPARTMENTS: { key: DepartmentName; label: string }[] = [
   { key: 'town_planning', label: 'Town Planning' },

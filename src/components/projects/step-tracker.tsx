@@ -1,20 +1,23 @@
 'use client'
 
 import { Check } from 'lucide-react'
-import { APPLICATION_STEPS } from '@/types'
+import { APPLICATION_STEPS, type ApplicationStep } from '@/types'
 import { cn } from '@/lib/utils'
 
 interface StepTrackerProps {
   currentStep: number
+  steps?: ApplicationStep[]
   onStepClick?: (step: number) => void
   compact?: boolean
 }
 
-export function StepTracker({ currentStep, onStepClick, compact }: StepTrackerProps) {
+export function StepTracker({ currentStep, steps, onStepClick, compact }: StepTrackerProps) {
+  const resolvedSteps = steps ?? [...APPLICATION_STEPS]
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
-        {APPLICATION_STEPS.map((step, index) => (
+        {resolvedSteps.map((step, index) => (
           <div key={step.step} className="flex flex-1 items-center">
             <div className="flex flex-col items-center">
               <button
@@ -52,7 +55,7 @@ export function StepTracker({ currentStep, onStepClick, compact }: StepTrackerPr
                 </span>
               )}
             </div>
-            {index < APPLICATION_STEPS.length - 1 && (
+            {index < resolvedSteps.length - 1 && (
               <div
                 className={cn(
                   'mx-1 h-[2px] flex-1 rounded-full',

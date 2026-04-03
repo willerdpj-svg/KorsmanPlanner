@@ -14,6 +14,7 @@ import { formatDate, formatCurrency } from '@/lib/utils/format'
 import { Pencil } from 'lucide-react'
 import Link from 'next/link'
 import type { ProjectStatus, DepartmentComment, Payment } from '@/types'
+import { getApplicationSteps } from '@/types'
 
 export default async function ProjectDetailPage({
   params,
@@ -68,6 +69,7 @@ export default async function ProjectDetailPage({
   const municipality = project.municipality as { name: string; code: string } | null
   const planner = project.assigned_planner as { full_name: string; title: string | null } | null
   const deptComments = (project.department_comments || []) as DepartmentComment[]
+  const applicationSteps = getApplicationSteps(applicationType?.name)
 
   return (
     <div className="space-y-6">
@@ -94,7 +96,7 @@ export default async function ProjectDetailPage({
       {/* Step Tracker */}
       <Card>
         <CardContent className="pt-6">
-          <InteractiveStepTracker projectId={id} currentStep={project.current_step} />
+          <InteractiveStepTracker projectId={id} currentStep={project.current_step} steps={applicationSteps} />
         </CardContent>
       </Card>
 

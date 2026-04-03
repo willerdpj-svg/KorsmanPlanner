@@ -4,13 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { StepTracker } from './step-tracker'
+import type { ApplicationStep } from '@/types'
 
 interface InteractiveStepTrackerProps {
   projectId: string
   currentStep: number
+  steps: ApplicationStep[]
 }
 
-export function InteractiveStepTracker({ projectId, currentStep }: InteractiveStepTrackerProps) {
+export function InteractiveStepTracker({ projectId, currentStep, steps }: InteractiveStepTrackerProps) {
   const router = useRouter()
   const supabase = createClient()
   const [step, setStep] = useState(currentStep)
@@ -26,5 +28,5 @@ export function InteractiveStepTracker({ projectId, currentStep }: InteractiveSt
     router.refresh()
   }
 
-  return <StepTracker currentStep={step} onStepClick={handleStepClick} />
+  return <StepTracker currentStep={step} steps={steps} onStepClick={handleStepClick} />
 }
