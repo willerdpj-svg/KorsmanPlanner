@@ -7,6 +7,7 @@ import { StepTracker } from '@/components/projects/step-tracker'
 import { StatusBadge } from '@/components/projects/status-badge'
 import { formatDateLong } from '@/lib/utils/format'
 import type { ProjectStatus } from '@/types'
+import { SearchInput } from '@/components/search-input'
 
 const STALE_DAYS = 30
 
@@ -125,6 +126,11 @@ export default async function ProjectsPage({
             New Project
           </Button>
         </Link>
+      </div>
+
+      {/* Search */}
+      <div className="max-w-sm">
+        <SearchInput placeholder="Search by file number, address, or description…" />
       </div>
 
       {/* Status filter tabs */}
