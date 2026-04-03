@@ -24,19 +24,54 @@ export async function POST(request: NextRequest) {
   if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 })
 
   const admin = createAdminClient()
+  const redirectTo = `${request.nextUrl.origin}/auth/callback?next=/portal/set-password`
 
-  // inviteUserByEmail creates the user (if not exists) and sends a
-  // "Set up your account" email with a link to choose a password.
+  // Try inviteUserByEmail first (creates user + sends invite email)
   const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${request.nextUrl.origin}/auth/callback?next=/portal/set-password`,
+    redirectTo,
     data: { client_id: clientId },
   })
 
   if (inviteError) {
+    // If user already exists, send a magic link / recovery email instead
+    const alreadyRegistered = inviteError.message.toLowerCase().includes('already been registered')
+      || inviteError.message.toLowerCase().includes('already exists')
+
+    if (!alreadyRegistered) {
+      return NextResponse.json({ error: inviteError.message }, { status: 400 })
+    }
+
+    // Look up existing user by email
+    const { data: { users } } = await admin.auth.admin.listUsers()
+    const existingUser = users?.find(u => u.email === email)
+
+    if (existingUser) {
+      // Link the existing auth user to the client record
+      await supabase
+        .from('clients')
+        .update({ user_id: existingUser.id })
+        .eq('id', clientId)
+
+      // Generate a recovery link so they can set their password
+      const { error: linkError } = await admin.auth.admin.generateLink({
+        type: 'recovery',
+        email,
+        options: { redirectTo },
+      })
+
+      if (linkError) {
+        return NextResponse.json({ error: linkError.message }, { status: 400 })
+      }
+
+      // Also send the recovery email via the standard API
+      await admin.auth.resetPasswordForEmail(email, { redirectTo })
+
+      return NextResponse.json({ success: true, resent: true })
+    }
+
     return NextResponse.json({ error: inviteError.message }, { status: 400 })
   }
 
-  // If the user already existed (invite resent), their id is in inviteData.user.id
   // Link this auth user to the client record
   if (inviteData?.user?.id) {
     await supabase
