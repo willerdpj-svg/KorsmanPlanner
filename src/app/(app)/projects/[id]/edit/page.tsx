@@ -382,7 +382,7 @@ export default function EditProjectPage({
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>SANRAL Comments</Label>
+                  <Label>External Comments</Label>
                   <Textarea value={form.sanral_comments} onChange={(e) => updateField('sanral_comments', e.target.value)} />
                 </div>
               </CardContent>

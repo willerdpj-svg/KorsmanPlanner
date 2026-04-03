@@ -174,7 +174,7 @@ export default async function ProjectDetailPage({
             {/* Bondholder & Consent */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Bondholder Consent & SANRAL</CardTitle>
+                <CardTitle className="text-base">Bondholder Consent & External</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <InfoRow label="Consent Requested" value={formatDate(project.bondholder_consent_requested)} />
@@ -186,7 +186,7 @@ export default async function ProjectDetailPage({
                   <InfoRow label="Objections Comment" value={project.objections_comment} />
                 )}
                 <Separator />
-                <InfoRow label="SANRAL Comments" value={project.sanral_comments} />
+                <InfoRow label="External Comments" value={project.sanral_comments} />
                 <InfoRow label="70/70 or 21/40 Consent" value={formatDate(project.consent_70_70_received)} />
                 {project.consent_type && (
                   <InfoRow label="Consent Type" value={project.consent_type} />
