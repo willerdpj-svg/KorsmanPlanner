@@ -8,6 +8,7 @@ import { Phone, Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import type { ProjectStatus } from '@/types'
 import { ClientPortalAccess } from '@/components/portal/client-portal-access'
+import { DeleteClientButton } from '@/components/clients/delete-client-button'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getJoinedName(val: any): string | null {
@@ -46,7 +47,10 @@ export default async function ClientDetailPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">{client.name}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">{client.name}</h1>
+        <DeleteClientButton clientId={id} clientName={client.name} />
+      </div>
 
       <Card>
         <CardHeader>
