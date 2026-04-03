@@ -66,7 +66,8 @@ export default async function ProjectDetailPage({
 
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('id, full_name, title')
+    .select('id, full_name, title, role')
+    .in('role', ['admin', 'planner'])
     .order('full_name')
 
   const client = project.client as { name: string; phone_cell: string | null; email: string | null } | null
