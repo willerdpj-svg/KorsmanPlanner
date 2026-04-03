@@ -6,19 +6,9 @@ import {
   View,
   Image,
   StyleSheet,
-  Font,
 } from '@react-pdf/renderer'
-import { APPLICATION_STEPS } from '@/types'
+import { getApplicationSteps } from '@/types'
 import path from 'path'
-
-// Register font for consistent rendering
-Font.register({
-  family: 'Century Gothic',
-  fonts: [
-    { src: 'https://fonts.cdnfonts.com/s/59297/CenturyGothic.woff', fontWeight: 'normal' },
-    { src: 'https://fonts.cdnfonts.com/s/59297/GOTHICB.woff', fontWeight: 'bold' },
-  ],
-})
 
 const colors = {
   maroon: '#7B1A3A',
@@ -33,7 +23,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 40,
     fontSize: 10,
-    fontFamily: 'Century Gothic',
+    fontFamily: 'Helvetica',
     color: colors.darkText,
   },
   // Header
@@ -68,7 +58,7 @@ const styles = StyleSheet.create({
   // Title
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
     color: colors.maroon,
     marginBottom: 15,
     textAlign: 'center',
@@ -85,7 +75,7 @@ const styles = StyleSheet.create({
   },
   aboutLabel: {
     width: 140,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
     fontSize: 9,
     color: colors.grey,
   },
@@ -96,7 +86,7 @@ const styles = StyleSheet.create({
   // Section
   sectionTitle: {
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
     color: colors.maroon,
     marginTop: 15,
     marginBottom: 8,
@@ -133,7 +123,7 @@ const styles = StyleSheet.create({
   stepNumber: {
     color: 'white',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
   },
   stepNumberFuture: {
     color: colors.grey,
@@ -142,7 +132,7 @@ const styles = StyleSheet.create({
   checkmark: {
     color: 'white',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
   },
   stepLabel: {
     fontSize: 6,
@@ -181,7 +171,7 @@ const styles = StyleSheet.create({
   deptHeaderText: {
     color: 'white',
     fontSize: 8,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
   },
   deptRow: {
     flexDirection: 'row',
@@ -213,7 +203,7 @@ const styles = StyleSheet.create({
   },
   signatureName: {
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: 'Helvetica-Bold',
     marginTop: 4,
   },
   signatureTitle: {
@@ -356,7 +346,7 @@ export function ProgressReportDocument({ data }: { data: ReportData }) {
         {/* Step Tracker */}
         <Text style={styles.sectionTitle}>Application Progress</Text>
         <View style={styles.stepsContainer}>
-          {APPLICATION_STEPS.map((step, index) => (
+          {getApplicationSteps(data.applicationType).map((step, index, arr) => (
             <React.Fragment key={step.step}>
               <View style={styles.stepItem}>
                 <View
@@ -385,7 +375,7 @@ export function ProgressReportDocument({ data }: { data: ReportData }) {
                 </View>
                 <Text style={styles.stepLabel}>{step.label}</Text>
               </View>
-              {index < APPLICATION_STEPS.length - 1 && (
+              {index < arr.length - 1 && (
                 <View
                   style={[
                     styles.stepLine,
