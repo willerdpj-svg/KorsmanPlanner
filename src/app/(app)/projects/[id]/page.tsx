@@ -12,6 +12,7 @@ import { FinancialsPanel } from '@/components/projects/financials-panel'
 import { ReportGenerator } from '@/components/projects/report-generator'
 import { formatDate, formatCurrency } from '@/lib/utils/format'
 import { Pencil } from 'lucide-react'
+import { DeleteProjectButton } from '@/components/projects/delete-project-button'
 import Link from 'next/link'
 import type { ProjectStatus, DepartmentComment, Payment } from '@/types'
 import { getApplicationSteps } from '@/types'
@@ -91,12 +92,15 @@ export default async function ProjectDetailPage({
             {municipality && ` - ${municipality.code}`}
           </p>
         </div>
-        <Link href={`/projects/${id}/edit`}>
-          <Button variant="outline" size="sm">
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href={`/projects/${id}/edit`}>
+            <Button variant="outline" size="sm">
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+          </Link>
+          <DeleteProjectButton projectId={id} fileNumber={project.file_number} />
+        </div>
       </div>
 
       {/* Step Tracker */}
