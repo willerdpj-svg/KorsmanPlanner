@@ -111,6 +111,10 @@ export interface DepartmentComment {
   requested_date: string | null
   received_date: string | null
   comments: string | null
+  has_issue: boolean
+  issue_notes: string | null
+  issue_assigned_to: string | null
+  issue_assignee?: { full_name: string; title: string | null }
 }
 
 export interface ProjectNote {

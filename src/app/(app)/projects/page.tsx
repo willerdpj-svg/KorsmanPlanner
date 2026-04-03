@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, FolderKanban, AlertTriangle } from 'lucide-react'
+import { Plus, FolderKanban, AlertTriangle, ShieldAlert } from 'lucide-react'
 import { StepTracker } from '@/components/projects/step-tracker'
 import { StatusBadge } from '@/components/projects/status-badge'
 import { formatDateLong } from '@/lib/utils/format'
@@ -35,6 +35,7 @@ function isStale(updatedAt: string | null, status: string): boolean {
 const STATUS_FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'active', label: 'Active' },
+  { key: 'issues', label: 'Issues' },
   { key: 'stale', label: 'Stale' },
   { key: 'on_hold', label: 'On Hold' },
   { key: 'approved', label: 'Approved' },
@@ -51,6 +52,7 @@ export default async function ProjectsPage({
   const supabase = await createClient()
 
   const staleFilter = params.status === 'stale'
+  const issuesFilter = params.status === 'issues'
   const staleThreshold = new Date(Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
   let query = supabase
@@ -60,7 +62,8 @@ export default async function ProjectsPage({
       application_submission_date, present_zoning, zoning_applied_for,
       client:clients(name),
       application_type:application_types(name),
-      municipality:municipalities(code)
+      municipality:municipalities(code),
+      department_comments(has_issue)
     `)
     .order('updated_at', { ascending: true }) // oldest first for stale view
 
@@ -70,7 +73,7 @@ export default async function ProjectsPage({
       .in('status', ['active', 'on_hold'])
       .lt('updated_at', staleThreshold)
   } else {
-    if (params.status && params.status !== 'all') {
+    if (params.status && params.status !== 'all' && !issuesFilter) {
       query = query.eq('status', params.status)
     }
     // Default: newest first
@@ -83,7 +86,15 @@ export default async function ProjectsPage({
     )
   }
 
-  const { data: projects } = await query.limit(100)
+  let { data: projects } = await query.limit(100)
+
+  // Client-side filter for issues (PostgREST can't filter by nested boolean easily)
+  if (issuesFilter && projects) {
+    projects = projects.filter((p) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (p.department_comments as any[])?.some((c) => c.has_issue)
+    )
+  }
 
   const activeFilter = params.status || 'all'
 
@@ -94,6 +105,12 @@ export default async function ProjectsPage({
           <h1 className="text-[22px] font-semibold tracking-tight">Projects</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">
             {projects?.length ?? 0} project{projects?.length !== 1 ? 's' : ''} found
+            {issuesFilter && (
+              <span className="ml-2 inline-flex items-center gap-1 rounded-lg bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700">
+                <ShieldAlert className="h-3 w-3" />
+                Projects with open department issues
+              </span>
+            )}
             {staleFilter && (
               <span className="ml-2 inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
                 <AlertTriangle className="h-3 w-3" />
@@ -120,14 +137,21 @@ export default async function ProjectsPage({
             <button
               className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-all ${
                 activeFilter === filter.key
-                  ? filter.key === 'stale'
+                  ? filter.key === 'issues'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : filter.key === 'stale'
                     ? 'bg-amber-500 text-white shadow-sm'
                     : 'bg-white text-foreground shadow-sm'
+                  : filter.key === 'issues'
+                  ? 'text-red-600 hover:text-red-700'
                   : filter.key === 'stale'
                   ? 'text-amber-600 hover:text-amber-700'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
+              {filter.key === 'issues' && (
+                <ShieldAlert className="mr-1 inline h-3.5 w-3.5" />
+              )}
               {filter.key === 'stale' && (
                 <AlertTriangle className="mr-1 inline h-3.5 w-3.5" />
               )}
@@ -144,12 +168,14 @@ export default async function ProjectsPage({
             <div className="divide-y divide-border/40">
               {projects.map((project) => {
                 const stale = isStale(project.updated_at, project.status)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const hasIssues = (project.department_comments as any[])?.some((c) => c.has_issue) ?? false
                 return (
                   <Link
                     key={project.id}
                     href={`/projects/${project.id}`}
                     className={`group flex items-center gap-4 px-5 py-4 transition-all hover:bg-muted/20 ${
-                      stale ? 'bg-amber-50/40' : ''
+                      hasIssues ? 'bg-red-50/40' : stale ? 'bg-amber-50/40' : ''
                     }`}
                   >
                     <div className="min-w-0 flex-1">
@@ -163,7 +189,13 @@ export default async function ProjectsPage({
                             {getJoinedCode(project.municipality)}
                           </span>
                         )}
-                        {stale && (
+                        {hasIssues && (
+                          <span className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                            <ShieldAlert className="h-3 w-3" />
+                            Issue
+                          </span>
+                        )}
+                        {stale && !hasIssues && (
                           <span className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
                             <AlertTriangle className="h-3 w-3" />
                             Stale
@@ -179,7 +211,7 @@ export default async function ProjectsPage({
                           {project.physical_address}
                         </p>
                       )}
-                      <p className={`mt-1 text-[11px] tabular-nums ${stale ? 'font-semibold text-amber-600' : 'text-muted-foreground/50'}`}>
+                      <p className={`mt-1 text-[11px] tabular-nums ${hasIssues ? 'font-semibold text-red-600' : stale ? 'font-semibold text-amber-600' : 'text-muted-foreground/50'}`}>
                         {formatDateLong(project.updated_at)}
                       </p>
                     </div>
@@ -193,16 +225,20 @@ export default async function ProjectsPage({
           ) : (
             <div className="flex flex-col items-center py-20 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
-                {staleFilter
+                {issuesFilter
+                  ? <ShieldAlert className="h-7 w-7 text-red-400" />
+                  : staleFilter
                   ? <AlertTriangle className="h-7 w-7 text-amber-400" />
                   : <FolderKanban className="h-7 w-7 text-muted-foreground/30" />
                 }
               </div>
               <p className="mt-4 text-[14px] font-medium text-muted-foreground">
-                {staleFilter ? 'No stale projects' : 'No projects found'}
+                {issuesFilter ? 'No open issues' : staleFilter ? 'No stale projects' : 'No projects found'}
               </p>
               <p className="mt-1 text-[13px] text-muted-foreground/60">
-                {staleFilter
+                {issuesFilter
+                  ? 'No department issues have been flagged across any projects.'
+                  : staleFilter
                   ? 'All active projects have been updated within the last 30 days.'
                   : 'Try adjusting your filters or create a new project.'}
               </p>

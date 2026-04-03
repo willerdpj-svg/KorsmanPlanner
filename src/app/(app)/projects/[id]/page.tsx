@@ -64,6 +64,11 @@ export default async function ProjectDetailPage({
     .select('id, key, label')
     .order('sort_order')
 
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name, title')
+    .order('full_name')
+
   const client = project.client as { name: string; phone_cell: string | null; email: string | null } | null
   const applicationType = project.application_type as { name: string } | null
   const municipality = project.municipality as { name: string; code: string } | null
@@ -196,6 +201,7 @@ export default async function ProjectDetailPage({
                 projectId={id}
                 departments={departments ?? []}
                 comments={deptComments}
+                profiles={profiles ?? []}
               />
             </CardContent>
           </Card>
