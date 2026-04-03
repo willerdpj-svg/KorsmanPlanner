@@ -66,13 +66,13 @@ export default async function ProjectsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-[22px] font-semibold tracking-tight">Projects</h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
             {projects?.length ?? 0} projects found
           </p>
         </div>
         <Link href="/projects/new">
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5 rounded-xl px-4 text-[13px] font-semibold">
             <Plus className="h-4 w-4" />
             New Project
           </Button>
@@ -80,16 +80,16 @@ export default async function ProjectsPage({
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex gap-1 rounded-lg bg-muted/60 p-1">
+      <div className="flex gap-1 rounded-xl bg-muted/50 p-1">
         {STATUS_FILTERS.map((filter) => (
           <Link
             key={filter.key}
             href={`/projects${filter.key !== 'all' ? `?status=${filter.key}` : ''}`}
           >
             <button
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+              className={`rounded-lg px-3.5 py-2 text-[13px] font-medium transition-all ${
                 (params.status || 'all') === filter.key
-                  ? 'bg-card text-foreground shadow-sm'
+                  ? 'bg-white text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -100,34 +100,34 @@ export default async function ProjectsPage({
       </div>
 
       {/* Project List */}
-      <Card>
+      <Card className="border-border/40 shadow-sm">
         <CardContent className="p-0">
           {projects && projects.length > 0 ? (
-            <div className="divide-y divide-border/60">
+            <div className="divide-y divide-border/40">
               {projects.map((project) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/30"
+                  className="group flex items-center gap-4 px-5 py-4 transition-all hover:bg-muted/20"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-sm font-semibold">
+                      <span className="font-mono text-[13px] font-semibold">
                         {project.file_number}
                       </span>
                       <StatusBadge status={project.status as ProjectStatus} />
                       {getJoinedCode(project.municipality) && (
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        <span className="rounded-lg bg-muted/70 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                           {getJoinedCode(project.municipality)}
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 truncate text-sm text-muted-foreground">
+                    <p className="mt-1 truncate text-[13px] text-muted-foreground">
                       {getJoinedName(project.client) || 'No client'} &middot;{' '}
                       {getJoinedName(project.application_type) || 'No type'}
                     </p>
                     {project.physical_address && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground/70">
+                      <p className="mt-0.5 truncate text-[12px] text-muted-foreground/60">
                         {project.physical_address}
                       </p>
                     )}
@@ -135,17 +135,19 @@ export default async function ProjectsPage({
                   <div className="hidden w-48 lg:block">
                     <StepTracker currentStep={project.current_step} compact />
                   </div>
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                  <span className="shrink-0 text-[12px] tabular-nums text-muted-foreground/70">
                     {formatDateLong(project.updated_at)}
                   </span>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center py-16 text-center">
-              <FolderKanban className="mb-3 h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm font-medium text-muted-foreground">No projects found</p>
-              <p className="mt-1 text-xs text-muted-foreground/70">
+            <div className="flex flex-col items-center py-20 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50">
+                <FolderKanban className="h-7 w-7 text-muted-foreground/30" />
+              </div>
+              <p className="mt-4 text-[14px] font-medium text-muted-foreground">No projects found</p>
+              <p className="mt-1 text-[13px] text-muted-foreground/60">
                 Try adjusting your filters or create a new project.
               </p>
             </div>

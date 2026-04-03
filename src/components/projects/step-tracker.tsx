@@ -22,18 +22,18 @@ export function StepTracker({ currentStep, onStepClick, compact }: StepTrackerPr
                 onClick={() => onStepClick?.(step.step)}
                 disabled={!onStepClick}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all',
+                  'flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-all',
                   step.step < currentStep &&
-                    'border-green-500 bg-green-500 text-white',
+                    'bg-emerald-500 text-white shadow-sm',
                   step.step === currentStep &&
-                    'border-blue-500 bg-blue-500 text-white animate-pulse',
+                    'bg-primary text-white shadow-sm ring-4 ring-primary/20',
                   step.step > currentStep &&
-                    'border-muted-foreground/30 text-muted-foreground/50',
+                    'bg-muted text-muted-foreground/50',
                   onStepClick && 'cursor-pointer hover:opacity-80'
                 )}
               >
                 {step.step < currentStep ? (
-                  <Check className="h-4 w-4" />
+                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
                 ) : (
                   step.step
                 )}
@@ -41,12 +41,12 @@ export function StepTracker({ currentStep, onStepClick, compact }: StepTrackerPr
               {!compact && (
                 <span
                   className={cn(
-                    'mt-2 text-center text-[11px] font-medium leading-tight',
+                    'mt-2 text-center text-[10px] font-medium leading-tight',
                     step.step <= currentStep
-                      ? 'text-foreground'
-                      : 'text-muted-foreground/50'
+                      ? 'text-foreground/80'
+                      : 'text-muted-foreground/40'
                   )}
-                  style={{ maxWidth: '80px' }}
+                  style={{ maxWidth: '72px' }}
                 >
                   {step.label}
                 </span>
@@ -55,8 +55,8 @@ export function StepTracker({ currentStep, onStepClick, compact }: StepTrackerPr
             {index < APPLICATION_STEPS.length - 1 && (
               <div
                 className={cn(
-                  'mx-1 h-0.5 flex-1',
-                  step.step < currentStep ? 'bg-green-500' : 'bg-muted-foreground/20'
+                  'mx-1 h-[2px] flex-1 rounded-full',
+                  step.step < currentStep ? 'bg-emerald-500' : 'bg-muted'
                 )}
               />
             )}

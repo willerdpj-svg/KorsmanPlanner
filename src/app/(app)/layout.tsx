@@ -31,7 +31,7 @@ export default async function AppLayout({
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header userName={userName} />
-        <main className="flex-1 overflow-y-auto bg-muted/40 p-4 lg:p-6">
+        <main className="flex-1 overflow-y-auto bg-background p-5 lg:p-8">
           {children}
         </main>
       </div>
