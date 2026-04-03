@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FolderKanban, CheckCircle, Clock, AlertTriangle } from 'lucide-react'
+import { FolderKanban, CheckCircle, Clock, AlertTriangle, ArrowRight } from 'lucide-react'
 import { StepTracker } from '@/components/projects/step-tracker'
 import { StatusBadge } from '@/components/projects/status-badge'
 import { formatDateLong } from '@/lib/utils/format'
@@ -17,7 +17,6 @@ function getJoinedName(val: any): string | null {
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  // Fetch stats
   const { count: totalActive } = await supabase
     .from('projects')
     .select('*', { count: 'exact', head: true })
@@ -37,7 +36,6 @@ export default async function DashboardPage() {
     .from('projects')
     .select('*', { count: 'exact', head: true })
 
-  // Fetch recent projects
   const { data: recentProjects } = await supabase
     .from('projects')
     .select(`
@@ -49,7 +47,6 @@ export default async function DashboardPage() {
     .order('updated_at', { ascending: false })
     .limit(10)
 
-  // Fetch step distribution for active projects
   const { data: stepDistribution } = await supabase
     .from('projects')
     .select('current_step')
@@ -62,49 +59,60 @@ export default async function DashboardPage() {
     }
   })
 
+  const maxStep = Math.max(...stepCounts, 1)
+
   const stats = [
     {
       title: 'Total Projects',
       value: totalAll ?? 0,
       icon: FolderKanban,
-      color: 'text-blue-600',
+      accent: 'bg-primary/10 text-primary',
     },
     {
       title: 'Active',
       value: totalActive ?? 0,
       icon: Clock,
-      color: 'text-blue-600',
+      accent: 'bg-blue-50 text-blue-600',
     },
     {
       title: 'Approved',
       value: totalApproved ?? 0,
       icon: CheckCircle,
-      color: 'text-green-600',
+      accent: 'bg-emerald-50 text-emerald-600',
     },
     {
       title: 'On Hold',
       value: totalOnHold ?? 0,
       icon: AlertTriangle,
-      color: 'text-amber-600',
+      accent: 'bg-amber-50 text-amber-600',
     },
   ]
 
+  const stepLabels = ['Filed', 'Public Part.', 'Dept Cmts', 'TP Review', 'Admin', 'Council', 'Resolution']
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Overview of your project portfolio
+        </p>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stat.value}</div>
+          <Card key={stat.title} className="relative overflow-hidden">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <p className="mt-2 text-3xl font-semibold tabular-nums">{stat.value}</p>
+                </div>
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.accent}`}>
+                  <stat.icon className="h-5 w-5" />
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -113,21 +121,21 @@ export default async function DashboardPage() {
       {/* Pipeline Distribution */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Active Projects Pipeline</CardTitle>
+          <CardTitle className="text-base font-semibold">Application Pipeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-3">
             {stepCounts.map((count, i) => (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                <span className="text-lg font-bold">{count}</span>
+              <div key={i} className="flex flex-1 flex-col items-center gap-2">
+                <span className="text-sm font-semibold tabular-nums">{count}</span>
                 <div
-                  className="w-full rounded-t bg-blue-500"
+                  className="w-full rounded-md bg-primary/80 transition-all"
                   style={{
-                    height: `${Math.max(4, (count / Math.max(...stepCounts, 1)) * 120)}px`,
+                    height: `${Math.max(6, (count / maxStep) * 120)}px`,
                   }}
                 />
-                <span className="text-[10px] text-muted-foreground">
-                  Step {i + 1}
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {stepLabels[i]}
                 </span>
               </div>
             ))}
@@ -138,22 +146,23 @@ export default async function DashboardPage() {
       {/* Recent Active Projects */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Recent Active Projects</CardTitle>
+          <CardTitle className="text-base font-semibold">Recent Active Projects</CardTitle>
           <Link
             href="/projects"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
           >
             View all
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </CardHeader>
         <CardContent>
           {recentProjects && recentProjects.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recentProjects.map((project) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-muted/50"
+                  className="group flex items-center justify-between rounded-lg border border-transparent p-3 transition-all hover:border-border hover:bg-muted/40 hover:shadow-sm"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -177,9 +186,14 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No projects yet. Create your first project to get started.
-            </p>
+            <div className="flex flex-col items-center py-12 text-center">
+              <FolderKanban className="mb-3 h-10 w-10 text-muted-foreground/30" />
+              <p className="text-sm font-medium text-muted-foreground">No projects yet</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">Create your first project to get started.</p>
+              <Link href="/projects/new" className="mt-4 text-sm font-medium text-primary hover:text-primary/80">
+                Create project
+              </Link>
+            </div>
           )}
         </CardContent>
       </Card>

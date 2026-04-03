@@ -23,13 +23,19 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden w-64 shrink-0 border-r bg-card lg:block">
-      <div className="flex h-16 items-center border-b px-6">
-        <Link href="/dashboard" className="text-lg font-bold tracking-tight">
+    <aside className="hidden w-64 shrink-0 bg-sidebar lg:flex lg:flex-col">
+      {/* Logo area */}
+      <div className="flex h-16 items-center gap-3 px-6">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+          <span className="text-sm font-bold text-white">K</span>
+        </div>
+        <Link href="/dashboard" className="text-base font-semibold tracking-tight text-sidebar-foreground">
           Korsman Planner
         </Link>
       </div>
-      <nav className="space-y-1 p-4">
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1 px-3 py-4">
         {navigation.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/')
@@ -38,18 +44,26 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className={cn('h-[18px] w-[18px]', isActive && 'text-white')} />
               {item.name}
             </Link>
           )
         })}
       </nav>
+
+      {/* Footer */}
+      <div className="border-t border-sidebar-border px-4 py-3">
+        <p className="text-[10px] leading-tight text-sidebar-foreground/40">
+          Korsman & Associates<br />
+          Town & Regional Planners
+        </p>
+      </div>
     </aside>
   )
 }

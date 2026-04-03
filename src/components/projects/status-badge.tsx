@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import { PROJECT_STATUSES, type ProjectStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -11,8 +10,11 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   if (!config) return null
 
   return (
-    <Badge variant="secondary" className={cn('font-medium', config.color)}>
+    <span className={cn(
+      'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium',
+      config.color
+    )}>
       {config.label}
-    </Badge>
+    </span>
   )
 }

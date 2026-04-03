@@ -175,9 +175,9 @@ export const DEPARTMENTS: { key: DepartmentName; label: string }[] = [
 ]
 
 export const PROJECT_STATUSES: { value: ProjectStatus; label: string; color: string }[] = [
-  { value: 'active', label: 'Active', color: 'bg-blue-100 text-blue-800' },
-  { value: 'approved', label: 'Approved', color: 'bg-green-100 text-green-800' },
-  { value: 'on_hold', label: 'On Hold', color: 'bg-amber-100 text-amber-800' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' },
-  { value: 'not_approved', label: 'Not Approved', color: 'bg-slate-100 text-slate-800' },
+  { value: 'active', label: 'Active', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'approved', label: 'Approved', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'on_hold', label: 'On Hold', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-50 text-red-700 border-red-200' },
+  { value: 'not_approved', label: 'Not Approved', color: 'bg-slate-50 text-slate-700 border-slate-200' },
 ]

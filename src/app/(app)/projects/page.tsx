@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Plus, FolderKanban } from 'lucide-react'
 import { StepTracker } from '@/components/projects/step-tracker'
 import { StatusBadge } from '@/components/projects/status-badge'
-import { formatDateLong, formatCurrency } from '@/lib/utils/format'
+import { formatDateLong } from '@/lib/utils/format'
 import type { ProjectStatus } from '@/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,6 +21,15 @@ function getJoinedCode(val: any): string | null {
   if (Array.isArray(val)) return val[0]?.code || null
   return val.code || null
 }
+
+const STATUS_FILTERS = [
+  { key: 'all', label: 'All' },
+  { key: 'active', label: 'Active' },
+  { key: 'on_hold', label: 'On Hold' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'cancelled', label: 'Cancelled' },
+  { key: 'not_approved', label: 'Not Approved' },
+]
 
 export default async function ProjectsPage({
   searchParams,
@@ -56,61 +65,59 @@ export default async function ProjectsPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {projects?.length ?? 0} projects found
+          </p>
+        </div>
         <Link href="/projects/new">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button size="sm" className="gap-1.5">
+            <Plus className="h-4 w-4" />
             New Project
           </Button>
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        {['all', 'active', 'on_hold', 'approved', 'cancelled', 'not_approved'].map(
-          (status) => (
-            <Link
-              key={status}
-              href={`/projects${status !== 'all' ? `?status=${status}` : ''}`}
+      {/* Status filter tabs */}
+      <div className="flex gap-1 rounded-lg bg-muted/60 p-1">
+        {STATUS_FILTERS.map((filter) => (
+          <Link
+            key={filter.key}
+            href={`/projects${filter.key !== 'all' ? `?status=${filter.key}` : ''}`}
+          >
+            <button
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                (params.status || 'all') === filter.key
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <Button
-                variant={
-                  (params.status || 'all') === status ? 'default' : 'outline'
-                }
-                size="sm"
-              >
-                {status === 'all'
-                  ? 'All'
-                  : status === 'not_approved'
-                    ? 'Not Approved'
-                    : status === 'on_hold'
-                      ? 'On Hold'
-                      : status.charAt(0).toUpperCase() + status.slice(1)}
-              </Button>
-            </Link>
-          )
-        )}
+              {filter.label}
+            </button>
+          </Link>
+        ))}
       </div>
 
       {/* Project List */}
       <Card>
         <CardContent className="p-0">
           {projects && projects.length > 0 ? (
-            <div className="divide-y">
+            <div className="divide-y divide-border/60">
               {projects.map((project) => (
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
+                  className="group flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/30"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <span className="font-mono text-sm font-semibold">
                         {project.file_number}
                       </span>
                       <StatusBadge status={project.status as ProjectStatus} />
                       {getJoinedCode(project.municipality) && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                           {getJoinedCode(project.municipality)}
                         </span>
                       )}
@@ -120,7 +127,7 @@ export default async function ProjectsPage({
                       {getJoinedName(project.application_type) || 'No type'}
                     </p>
                     {project.physical_address && (
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground/70">
                         {project.physical_address}
                       </p>
                     )}
@@ -128,16 +135,20 @@ export default async function ProjectsPage({
                   <div className="hidden w-48 lg:block">
                     <StepTracker currentStep={project.current_step} compact />
                   </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     {formatDateLong(project.updated_at)}
                   </span>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="py-12 text-center text-sm text-muted-foreground">
-              No projects found.
-            </p>
+            <div className="flex flex-col items-center py-16 text-center">
+              <FolderKanban className="mb-3 h-10 w-10 text-muted-foreground/30" />
+              <p className="text-sm font-medium text-muted-foreground">No projects found</p>
+              <p className="mt-1 text-xs text-muted-foreground/70">
+                Try adjusting your filters or create a new project.
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
