@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FolderKanban, CheckCircle, Clock, AlertTriangle, ArrowRight } from 'lucide-react'
+import { FolderKanban, CheckCircle, Clock, AlertTriangle, ArrowRight, TimerOff } from 'lucide-react'
 import { StepTracker } from '@/components/projects/step-tracker'
 import { StatusBadge } from '@/components/projects/status-badge'
 import { formatDateLong } from '@/lib/utils/format'
@@ -31,6 +31,13 @@ export default async function DashboardPage() {
     .from('projects')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'on_hold')
+
+  const staleThreshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { count: totalStale } = await supabase
+    .from('projects')
+    .select('*', { count: 'exact', head: true })
+    .in('status', ['active', 'on_hold'])
+    .lt('updated_at', staleThreshold)
 
   const { count: totalAll } = await supabase
     .from('projects')
@@ -67,24 +74,35 @@ export default async function DashboardPage() {
       value: totalAll ?? 0,
       icon: FolderKanban,
       accent: 'bg-primary/8 text-primary',
+      href: undefined as string | undefined,
     },
     {
       title: 'Active',
       value: totalActive ?? 0,
       icon: Clock,
       accent: 'bg-blue-50 text-blue-600',
+      href: undefined as string | undefined,
     },
     {
       title: 'Approved',
       value: totalApproved ?? 0,
       icon: CheckCircle,
       accent: 'bg-emerald-50 text-emerald-600',
+      href: undefined as string | undefined,
     },
     {
       title: 'On Hold',
+      href: undefined as string | undefined,
       value: totalOnHold ?? 0,
       icon: AlertTriangle,
       accent: 'bg-amber-50 text-amber-600',
+    },
+    {
+      title: 'Stale (30d+)',
+      value: totalStale ?? 0,
+      icon: TimerOff,
+      accent: 'bg-orange-50 text-orange-600',
+      href: '/projects?status=stale',
     },
   ]
 
@@ -100,22 +118,27 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="overflow-hidden border-border/40 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[13px] font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">{stat.value}</p>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        {stats.map((stat) => {
+          const card = (
+            <Card key={stat.title} className={`overflow-hidden border-border/40 shadow-sm transition-all ${stat.href ? 'hover:shadow-md hover:border-amber-200 cursor-pointer' : ''}`}>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[13px] font-medium text-muted-foreground">{stat.title}</p>
+                    <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">{stat.value}</p>
+                  </div>
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.accent}`}>
+                    <stat.icon className="h-5 w-5" strokeWidth={1.5} />
+                  </div>
                 </div>
-                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.accent}`}>
-                  <stat.icon className="h-5 w-5" strokeWidth={1.5} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          )
+          return stat.href
+            ? <Link key={stat.title} href={stat.href}>{card}</Link>
+            : card
+        })}
       </div>
 
       {/* Pipeline Distribution */}
