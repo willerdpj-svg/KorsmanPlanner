@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   // inviteUserByEmail creates the user (if not exists) and sends a
   // "Set up your account" email with a link to choose a password.
   const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${request.nextUrl.origin}/portal/dashboard`,
+    redirectTo: `${request.nextUrl.origin}/auth/callback?next=/portal/set-password`,
     data: { client_id: clientId },
   })
 

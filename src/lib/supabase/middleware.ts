@@ -32,12 +32,13 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isPortalLogin = pathname.startsWith('/portal/login')
+  const isPortalSetPassword = pathname.startsWith('/portal/set-password')
   const isPortalRoute = pathname.startsWith('/portal')
   const isStaffLogin = pathname.startsWith('/login')
   const isAuthRoute = pathname.startsWith('/auth')
 
-  // Public routes: login pages and auth callbacks
-  const isPublic = isStaffLogin || isPortalLogin || isAuthRoute
+  // Public routes: login pages, auth callbacks, and password setup
+  const isPublic = isStaffLogin || isPortalLogin || isPortalSetPassword || isAuthRoute
 
   // Not authenticated → redirect to appropriate login
   if (!user && !isPublic) {
