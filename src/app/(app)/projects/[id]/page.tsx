@@ -58,6 +58,11 @@ export default async function ProjectDetailPage({
     .eq('project_id', id)
     .order('created_at', { ascending: false })
 
+  const { data: departments } = await supabase
+    .from('departments')
+    .select('id, key, label')
+    .order('sort_order')
+
   const client = project.client as { name: string; phone_cell: string | null; email: string | null } | null
   const applicationType = project.application_type as { name: string } | null
   const municipality = project.municipality as { name: string; code: string } | null
@@ -185,7 +190,11 @@ export default async function ProjectDetailPage({
               <CardTitle className="text-base">Department Comments (Step 3)</CardTitle>
             </CardHeader>
             <CardContent>
-              <InteractiveDepartmentChecklist comments={deptComments} />
+              <InteractiveDepartmentChecklist
+                projectId={id}
+                departments={departments ?? []}
+                comments={deptComments}
+              />
             </CardContent>
           </Card>
         </TabsContent>
