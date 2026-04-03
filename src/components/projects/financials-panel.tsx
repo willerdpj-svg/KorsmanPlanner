@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils/format'
-import { Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, ChevronDown, ChevronUp, Send, CheckCircle2, XCircle, Clock } from 'lucide-react'
 import type { Invoice, Payment } from '@/types'
+
+type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'declined'
 
 interface FinancialsPanelProps {
   projectId: string
@@ -19,9 +21,17 @@ interface FinancialsPanelProps {
   quotationAmount: number | null
   quotationDate: string | null
   dateAccepting: string | null
+  quoteStatus: QuoteStatus
   bulkServicesAmount: number | null
   bulkServicesPaymentDate: string | null
   invoices: (Invoice & { payments: Payment[] })[]
+}
+
+const QUOTE_STATUS_CONFIG: Record<QuoteStatus, { label: string; color: string; icon: React.ElementType }> = {
+  draft:    { label: 'Draft',    color: 'bg-slate-100 text-slate-600',   icon: Clock },
+  sent:     { label: 'Sent to client', color: 'bg-blue-50 text-blue-700', icon: Send },
+  accepted: { label: 'Accepted', color: 'bg-emerald-50 text-emerald-700', icon: CheckCircle2 },
+  declined: { label: 'Declined', color: 'bg-red-50 text-red-600',         icon: XCircle },
 }
 
 export function FinancialsPanel({
@@ -30,6 +40,7 @@ export function FinancialsPanel({
   quotationAmount,
   quotationDate,
   dateAccepting,
+  quoteStatus: initialQuoteStatus,
   bulkServicesAmount,
   bulkServicesPaymentDate,
   invoices: initialInvoices,
@@ -37,6 +48,8 @@ export function FinancialsPanel({
   const router = useRouter()
   const supabase = createClient()
   const [invoices, setInvoices] = useState(initialInvoices)
+  const [quoteStatus, setQuoteStatus] = useState<QuoteStatus>(initialQuoteStatus)
+  const [sendingQuote, setSendingQuote] = useState(false)
   const [showNewInvoice, setShowNewInvoice] = useState(false)
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null)
   const [showPaymentFor, setShowPaymentFor] = useState<string | null>(null)
@@ -55,6 +68,19 @@ export function FinancialsPanel({
 
   const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.amount), 0)
   const totalPaid = invoices.reduce((sum, inv) => sum + Number(inv.amount_paid), 0)
+
+  async function handleSendQuote() {
+    setSendingQuote(true)
+    const { error } = await supabase
+      .from('projects')
+      .update({ quote_status: 'sent' })
+      .eq('id', projectId)
+    if (!error) {
+      setQuoteStatus('sent')
+      router.refresh()
+    }
+    setSendingQuote(false)
+  }
 
   async function handleCreateInvoice(e: React.FormEvent) {
     e.preventDefault()
@@ -113,8 +139,28 @@ export function FinancialsPanel({
     <div className="space-y-4">
       {/* Quotation summary */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Quotation</CardTitle>
+          <div className="flex items-center gap-2">
+            {/* Quote status badge */}
+            {(() => {
+              const cfg = QUOTE_STATUS_CONFIG[quoteStatus]
+              const Icon = cfg.icon
+              return (
+                <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold ${cfg.color}`}>
+                  <Icon className="h-3.5 w-3.5" />
+                  {cfg.label}
+                </span>
+              )
+            })()}
+            {/* Send to client button */}
+            {quotationAmount && (quoteStatus === 'draft' || quoteStatus === 'declined') && (
+              <Button size="sm" variant="outline" onClick={handleSendQuote} disabled={sendingQuote} className="gap-1.5 rounded-xl text-[12px]">
+                <Send className="h-3.5 w-3.5" />
+                {sendingQuote ? 'Sending...' : 'Send to Client'}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <InfoRow label="Quotation Number" value={quotationNumber} />

@@ -2,9 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,9 +16,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({
-            request,
-          })
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -33,22 +29,60 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // If not authenticated and trying to access protected routes, redirect to login
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
+  const { pathname } = request.nextUrl
+
+  const isPortalLogin = pathname.startsWith('/portal/login')
+  const isPortalRoute = pathname.startsWith('/portal')
+  const isStaffLogin = pathname.startsWith('/login')
+  const isAuthRoute = pathname.startsWith('/auth')
+
+  // Public routes: login pages and auth callbacks
+  const isPublic = isStaffLogin || isPortalLogin || isAuthRoute
+
+  // Not authenticated → redirect to appropriate login
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = isPortalRoute ? '/portal/login' : '/login'
     return NextResponse.redirect(url)
   }
 
-  // If authenticated and on login page, redirect to dashboard
-  if (user && request.nextUrl.pathname.startsWith('/login')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  if (user) {
+    // Check if this user is a client (has a clients record with their user_id)
+    const { data: clientRecord } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    const isClientUser = !!clientRecord
+
+    // Client trying to access staff area → redirect to portal
+    if (isClientUser && !isPortalRoute && !isPublic) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/portal/dashboard'
+      return NextResponse.redirect(url)
+    }
+
+    // Staff trying to access portal → redirect to dashboard
+    if (!isClientUser && isPortalRoute && !isPortalLogin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+
+    // Authenticated client on portal login → go to portal dashboard
+    if (isClientUser && isPortalLogin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/portal/dashboard'
+      return NextResponse.redirect(url)
+    }
+
+    // Authenticated staff on staff login → go to dashboard
+    if (!isClientUser && isStaffLogin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

@@ -7,6 +7,7 @@ import { formatDateLong } from '@/lib/utils/format'
 import { Phone, Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import type { ProjectStatus } from '@/types'
+import { ClientPortalAccess } from '@/components/portal/client-portal-access'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getJoinedName(val: any): string | null {
@@ -25,7 +26,7 @@ export default async function ClientDetailPage({
 
   const { data: client, error } = await supabase
     .from('clients')
-    .select('*')
+    .select('*, user_id')
     .eq('id', id)
     .single()
 
@@ -79,6 +80,20 @@ export default async function ClientDetailPage({
               <span className="text-muted-foreground">Postal: {client.postal_address}</span>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Portal access */}
+      <Card className="border-border/40 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-[15px] font-semibold">Client Portal Access</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ClientPortalAccess
+            clientId={id}
+            hasPortalAccess={!!client.user_id}
+            clientEmail={client.email}
+          />
         </CardContent>
       </Card>
 

@@ -242,6 +242,7 @@ export default async function ProjectDetailPage({
             quotationAmount={project.quotation_amount}
             quotationDate={project.quotation_date}
             dateAccepting={project.date_accepting}
+            quoteStatus={(project.quote_status as 'draft' | 'sent' | 'accepted' | 'declined') ?? 'draft'}
             bulkServicesAmount={project.bulk_services_amount}
             bulkServicesPaymentDate={project.bulk_services_payment_date}
             invoices={(invoices || []).map((inv) => ({
