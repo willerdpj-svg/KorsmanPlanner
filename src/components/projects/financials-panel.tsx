@@ -22,8 +22,6 @@ interface FinancialsPanelProps {
   quotationDate: string | null
   dateAccepting: string | null
   quoteStatus: QuoteStatus
-  bulkServicesAmount: number | null
-  bulkServicesPaymentDate: string | null
   invoices: (Invoice & { payments: Payment[] })[]
 }
 
@@ -41,8 +39,6 @@ export function FinancialsPanel({
   quotationDate,
   dateAccepting,
   quoteStatus: initialQuoteStatus,
-  bulkServicesAmount,
-  bulkServicesPaymentDate,
   invoices: initialInvoices,
 }: FinancialsPanelProps) {
   const router = useRouter()
@@ -184,9 +180,6 @@ export function FinancialsPanel({
               {formatCurrency(totalInvoiced - totalPaid)}
             </span>
           </div>
-          <Separator />
-          <InfoRow label="Bulk Services Amount" value={formatCurrency(bulkServicesAmount)} />
-          <InfoRow label="Bulk Services Payment" value={formatDate(bulkServicesPaymentDate)} />
         </CardContent>
       </Card>
 

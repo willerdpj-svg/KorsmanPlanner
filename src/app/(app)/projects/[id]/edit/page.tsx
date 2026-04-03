@@ -410,14 +410,6 @@ export default function EditProjectPage({
                     <Label>Date Accepted</Label>
                     <Input type="date" value={form.date_accepting} onChange={(e) => updateField('date_accepting', e.target.value)} />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Bulk Services Amount (ZAR)</Label>
-                    <Input type="number" step="0.01" value={form.bulk_services_amount} onChange={(e) => updateField('bulk_services_amount', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Bulk Services Payment Date</Label>
-                    <Input type="date" value={form.bulk_services_payment_date} onChange={(e) => updateField('bulk_services_payment_date', e.target.value)} />
-                  </div>
                 </div>
               </CardContent>
             </Card>
