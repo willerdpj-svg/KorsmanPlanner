@@ -10,12 +10,30 @@ export default async function PortalLayout({ children }: { children: React.React
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/portal/login')
 
-  // Verify this is a client user
-  const { data: clientRecord } = await supabase
+  // Find client by user_id first, then fall back to email match (first login after invite)
+  let { data: clientRecord } = await supabase
     .from('clients')
     .select('id, name, email')
     .eq('user_id', user.id)
     .single()
+
+  if (!clientRecord && user.email) {
+    // First login after invite: link by email and save user_id
+    const { data: byEmail } = await supabase
+      .from('clients')
+      .select('id, name, email')
+      .eq('email', user.email)
+      .is('user_id', null)
+      .single()
+
+    if (byEmail) {
+      await supabase
+        .from('clients')
+        .update({ user_id: user.id })
+        .eq('id', byEmail.id)
+      clientRecord = byEmail
+    }
+  }
 
   if (!clientRecord) redirect('/login')
 
