@@ -9,6 +9,7 @@ import {
   Settings,
   Upload,
   ClipboardList,
+  DollarSign,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -17,6 +18,7 @@ const navigation = [
   { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
+  { name: 'Financials', href: '/financials', icon: DollarSign },
   { name: 'Import', href: '/import', icon: Upload },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
