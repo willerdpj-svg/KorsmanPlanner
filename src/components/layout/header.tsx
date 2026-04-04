@@ -12,12 +12,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { LogOut, User, Menu, ChevronDown } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { MobileSidebar } from './mobile-sidebar'
+import { NotificationBell } from './notification-bell'
 
 interface HeaderProps {
   userName: string
+  userId: string
 }
 
-export function Header({ userName }: HeaderProps) {
+export function Header({ userName, userId }: HeaderProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -47,27 +49,31 @@ export function Header({ userName }: HeaderProps) {
         </Sheet>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger className="inline-flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-sm transition-colors hover:bg-muted">
-          <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
-            <AvatarFallback className="bg-primary text-[11px] font-semibold text-primary-foreground">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden text-[13px] font-medium sm:inline-block">{userName}</span>
-          <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48 rounded-xl">
-          <DropdownMenuItem onClick={() => router.push('/settings')} className="rounded-lg">
-            <User className="mr-2 h-4 w-4" />
-            Settings
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleSignOut} className="rounded-lg">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-2">
+        <NotificationBell userId={userId} />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className="inline-flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-sm transition-colors hover:bg-muted">
+            <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
+              <AvatarFallback className="bg-primary text-[11px] font-semibold text-primary-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden text-[13px] font-medium sm:inline-block">{userName}</span>
+            <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48 rounded-xl">
+            <DropdownMenuItem onClick={() => router.push('/settings')} className="rounded-lg">
+              <User className="mr-2 h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut} className="rounded-lg">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   )
 }

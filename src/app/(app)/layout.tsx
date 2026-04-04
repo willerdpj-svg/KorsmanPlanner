@@ -30,7 +30,7 @@ export default async function AppLayout({
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header userName={userName} />
+        <Header userName={userName} userId={user.id} />
         <main className="flex-1 overflow-y-auto bg-background p-5 lg:p-8">
           {children}
         </main>
