@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -26,8 +26,6 @@ export default function AuthCallbackPage() {
       }
 
       // Case 2: Implicit flow — tokens in URL hash (auto-detected by Supabase client)
-      // The Supabase client automatically picks up tokens from the hash fragment
-      // when it initializes. Wait a moment for it to process.
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         router.push(next)
@@ -44,7 +42,7 @@ export default function AuthCallbackPage() {
         }
       )
 
-      // Timeout after 5 seconds — if no session, something went wrong
+      // Timeout after 5 seconds
       setTimeout(() => {
         subscription.unsubscribe()
         setError('Unable to verify your invite link. It may have expired. Please request a new invite.')
@@ -74,5 +72,22 @@ export default function AuthCallbackPage() {
         <p className="text-muted-foreground">Setting up your account…</p>
       </div>
     </div>
+  )
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <p className="text-muted-foreground">Setting up your account…</p>
+          </div>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   )
 }
