@@ -25,28 +25,48 @@ function AuthCallbackContent() {
         }
       }
 
-      // Case 2: Implicit flow — tokens in URL hash (auto-detected by Supabase client)
+      // Case 2: Hash fragment contains tokens (implicit/invite flow)
+      // Parse hash manually since @supabase/ssr may not auto-detect
+      const hash = window.location.hash
+      if (hash) {
+        const params = new URLSearchParams(hash.substring(1))
+        const accessToken = params.get('access_token')
+        const refreshToken = params.get('refresh_token')
+
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (!error) {
+            router.push(next)
+            return
+          }
+        }
+      }
+
+      // Case 3: Session might already exist (e.g. from auto-detection)
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         router.push(next)
         return
       }
 
-      // Case 3: Listen for auth state change (covers delayed hash detection)
+      // Case 4: Wait for auth state change
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, session) => {
-          if (event === 'SIGNED_IN' && session) {
+          if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session) {
             subscription.unsubscribe()
             router.push(next)
           }
         }
       )
 
-      // Timeout after 5 seconds
+      // Timeout after 8 seconds
       setTimeout(() => {
         subscription.unsubscribe()
         setError('Unable to verify your invite link. It may have expired. Please request a new invite.')
-      }, 5000)
+      }, 8000)
     }
 
     handleCallback()
