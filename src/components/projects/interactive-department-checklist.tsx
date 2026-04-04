@@ -112,10 +112,16 @@ export function InteractiveDepartmentChecklist({ projectId, departments, comment
   async function saveIssue(dept: string, flagging: boolean) {
     const existing = comments.find(c => c.department === dept)
     const assignee = profiles.find(p => p.id === draftAssignee[dept]) ?? null
-    const patch = {
+    const patch: Record<string, unknown> = {
       has_issue:          flagging,
       issue_notes:        flagging ? draftIssue[dept] ?? '' : null,
       issue_assigned_to:  flagging ? draftAssignee[dept] || null : null,
+    }
+    if (flagging) {
+      patch.issue_created_at = new Date().toISOString()
+      patch.issue_resolved_at = null
+    } else {
+      patch.issue_resolved_at = new Date().toISOString()
     }
     setSaving(p => ({ ...p, [dept]: true }))
 
