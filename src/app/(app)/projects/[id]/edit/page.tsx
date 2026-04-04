@@ -48,10 +48,6 @@ export default function EditProjectPage({
     zoning_applied_for: '',
     status: 'active',
     current_step: 1,
-    quotation_number: '',
-    quotation_date: '',
-    quotation_amount: '',
-    date_accepting: '',
     application_submission_date: '',
     proof_of_ads_date: '',
     bondholder_consent_requested: '',
@@ -99,10 +95,6 @@ export default function EditProjectPage({
           zoning_applied_for: p.zoning_applied_for || '',
           status: p.status || 'active',
           current_step: p.current_step || 1,
-          quotation_number: p.quotation_number || '',
-          quotation_date: p.quotation_date || '',
-          quotation_amount: p.quotation_amount?.toString() || '',
-          date_accepting: p.date_accepting || '',
           application_submission_date: p.application_submission_date || '',
           proof_of_ads_date: p.proof_of_ads_date || '',
           bondholder_consent_requested: p.bondholder_consent_requested || '',
@@ -151,10 +143,6 @@ export default function EditProjectPage({
         zoning_applied_for: form.zoning_applied_for || null,
         status: form.status,
         current_step: form.current_step,
-        quotation_number: form.quotation_number || null,
-        quotation_date: form.quotation_date || null,
-        quotation_amount: form.quotation_amount ? parseFloat(form.quotation_amount) : null,
-        date_accepting: form.date_accepting || null,
         application_submission_date: form.application_submission_date || null,
         proof_of_ads_date: form.proof_of_ads_date || null,
         bondholder_consent_requested: form.bondholder_consent_requested || null,
@@ -392,25 +380,12 @@ export default function EditProjectPage({
           <TabsContent value="financial">
             <Card>
               <CardHeader><CardTitle className="text-base">Financial Details</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Quotation Number</Label>
-                    <Input value={form.quotation_number} onChange={(e) => updateField('quotation_number', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Quotation Amount (ZAR)</Label>
-                    <Input type="number" step="0.01" value={form.quotation_amount} onChange={(e) => updateField('quotation_amount', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Quotation Date</Label>
-                    <Input type="date" value={form.quotation_date} onChange={(e) => updateField('quotation_date', e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Date Accepted</Label>
-                    <Input type="date" value={form.date_accepting} onChange={(e) => updateField('date_accepting', e.target.value)} />
-                  </div>
-                </div>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Quotations, invoices, and payments are managed from the{' '}
+                  <a href={`/projects/${id}`} className="text-primary underline">Financials tab</a>{' '}
+                  on the project detail page.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>

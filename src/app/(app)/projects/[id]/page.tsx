@@ -48,6 +48,12 @@ export default async function ProjectDetailPage({
     .eq('project_id', id)
     .order('created_at', { ascending: false })
 
+  const { data: quotations } = await supabase
+    .from('quotations')
+    .select('*')
+    .eq('project_id', id)
+    .order('created_at', { ascending: false })
+
   const { data: invoices } = await supabase
     .from('invoices')
     .select('*, payments(*)')
@@ -161,8 +167,6 @@ export default async function ProjectDetailPage({
                 <CardTitle className="text-base">Key Dates</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <InfoRow label="Quotation Date" value={formatDate(project.quotation_date)} />
-                <InfoRow label="Date Accepted" value={formatDate(project.date_accepting)} />
                 <InfoRow label="Submission Date" value={formatDate(project.application_submission_date)} />
                 <InfoRow label="Proof of Ads" value={formatDate(project.proof_of_ads_date)} />
                 <InfoRow label="Hearing Date" value={formatDate(project.hearing_date)} />
@@ -249,11 +253,7 @@ export default async function ProjectDetailPage({
         <TabsContent value="financials">
           <FinancialsPanel
             projectId={id}
-            quotationNumber={project.quotation_number}
-            quotationAmount={project.quotation_amount}
-            quotationDate={project.quotation_date}
-            dateAccepting={project.date_accepting}
-            quoteStatus={(project.quote_status as 'draft' | 'sent' | 'accepted' | 'declined') ?? 'draft'}
+            quotations={quotations || []}
             invoices={(invoices || []).map((inv) => ({
               ...inv,
               payments: (inv as Record<string, unknown>).payments as Payment[] || [],

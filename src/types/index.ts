@@ -126,6 +126,21 @@ export interface ProjectNote {
   author?: Profile
 }
 
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'declined'
+
+export interface Quotation {
+  id: string
+  project_id: string
+  quotation_number: string | null
+  amount: number
+  date_issued: string | null
+  status: QuoteStatus
+  date_accepted: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Invoice {
   id: string
   project_id: string

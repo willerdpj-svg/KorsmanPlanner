@@ -25,17 +25,22 @@ export default async function PortalDashboardPage() {
   const { data: projects } = await supabase
     .from('projects')
     .select(`
-      id, file_number, status, current_step, quote_status,
-      quotation_amount, quotation_date, updated_at,
+      id, file_number, status, current_step, updated_at,
       application_type:application_types(name),
-      municipality:municipalities(name, code)
+      municipality:municipalities(name, code),
+      quotations(id, status)
     `)
     .eq('client_id', clientRecord.id)
     .order('updated_at', { ascending: false })
 
+  // Projects that have at least one quotation with status 'sent'
   const pendingQuotes = projects?.filter(
-    (p) => p.quote_status === 'sent'
+    (p) => (p.quotations as { id: string; status: string }[])?.some((q) => q.status === 'sent')
   ) ?? []
+
+  // Projects that have at least one accepted quotation
+  const hasAcceptedQuote = (p: typeof projects extends (infer T)[] | null ? T : never) =>
+    (p.quotations as { id: string; status: string }[])?.some((q) => q.status === 'accepted')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getTypeName = (p: any) => p.application_type?.name || null
@@ -115,7 +120,8 @@ export default async function PortalDashboardPage() {
               const steps = getApplicationSteps(getTypeName(project))
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const currentStepLabel = steps.find(s => s.step === project.current_step)?.label ?? `Step ${project.current_step}`
-              const quoteAwaitingAction = project.quote_status === 'sent'
+              const quoteAwaitingAction = (project.quotations as { id: string; status: string }[])?.some((q) => q.status === 'sent')
+              const quoteAccepted = hasAcceptedQuote(project)
 
               return (
                 <Link key={project.id} href={`/portal/projects/${project.id}`}>
@@ -132,7 +138,7 @@ export default async function PortalDashboardPage() {
                                 Quote awaiting review
                               </span>
                             )}
-                            {project.quote_status === 'accepted' && (
+                            {quoteAccepted && (
                               <span className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                                 <CheckCircle2 className="h-3 w-3" />
                                 Quote accepted

@@ -41,10 +41,6 @@ export default function NewProjectPage() {
     present_zoning: '',
     zoning_applied_for: '',
     status: 'active',
-    quotation_number: '',
-    quotation_date: '',
-    quotation_amount: '',
-    date_accepting: '',
     application_submission_date: '',
   })
 
@@ -92,10 +88,6 @@ export default function NewProjectPage() {
         present_zoning: form.present_zoning || null,
         zoning_applied_for: form.zoning_applied_for || null,
         status: form.status,
-        quotation_number: form.quotation_number || null,
-        quotation_date: form.quotation_date || null,
-        quotation_amount: form.quotation_amount ? parseFloat(form.quotation_amount) : null,
-        date_accepting: form.date_accepting || null,
         application_submission_date: form.application_submission_date || null,
       })
       .select('id')
@@ -317,41 +309,10 @@ export default function NewProjectPage() {
               <CardHeader>
                 <CardTitle className="text-base">Financial Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Quotation Number</Label>
-                    <Input
-                      value={form.quotation_number}
-                      onChange={(e) => updateField('quotation_number', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Quotation Amount (ZAR)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={form.quotation_amount}
-                      onChange={(e) => updateField('quotation_amount', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Quotation Date</Label>
-                    <Input
-                      type="date"
-                      value={form.quotation_date}
-                      onChange={(e) => updateField('quotation_date', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Date Accepted</Label>
-                    <Input
-                      type="date"
-                      value={form.date_accepting}
-                      onChange={(e) => updateField('date_accepting', e.target.value)}
-                    />
-                  </div>
-                </div>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Quotations can be added from the Financials tab after creating the project.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>

@@ -43,6 +43,12 @@ export default async function PortalProjectPage({
 
   if (error || !project) notFound()
 
+  const { data: quotations } = await supabase
+    .from('quotations')
+    .select('*')
+    .eq('project_id', id)
+    .order('created_at', { ascending: false })
+
   const { data: invoices } = await supabase
     .from('invoices')
     .select('*, payments(*)')
@@ -82,16 +88,12 @@ export default async function PortalProjectPage({
         </div>
       </div>
 
-      {/* Quote — shown prominently if action needed */}
+      {/* Quotations — shown prominently if action needed */}
       <div>
-        <h2 className="mb-3 text-[15px] font-semibold">Quotation</h2>
+        <h2 className="mb-3 text-[15px] font-semibold">Quotations</h2>
         <PortalQuotePanel
           projectId={id}
-          quotationNumber={project.quotation_number}
-          quotationAmount={project.quotation_amount}
-          quotationDate={project.quotation_date}
-          quoteStatus={project.quote_status as 'draft' | 'sent' | 'accepted' | 'declined'}
-          dateAccepting={project.date_accepting}
+          quotations={quotations || []}
         />
       </div>
 
@@ -159,18 +161,6 @@ export default async function PortalProjectPage({
             </div>
           </CardHeader>
           <CardContent className="space-y-3 text-[13px]">
-            {project.quotation_date && (
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Quotation issued</span>
-                <span className="font-medium">{formatDate(project.quotation_date)}</span>
-              </div>
-            )}
-            {project.date_accepting && (
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Quote accepted</span>
-                <span className="font-medium">{formatDate(project.date_accepting)}</span>
-              </div>
-            )}
             {project.application_submission_date && (
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">Application submitted</span>
